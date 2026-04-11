@@ -1,0 +1,1782 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SCCT理论下高校负面舆情回应有效性研究</title>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+        }
+        body {
+            width: 100vw;
+            height: 100vh;
+            overflow-x: hidden;
+            background: url("first.png") center/cover no-repeat fixed;
+            background-color: #1a1a2e;
+        }
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.35);
+            z-index: -1;
+        }
+        /* 封面 */
+        .cover-container {
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            cursor: pointer;
+        }
+        .content-wrapper {
+            max-width: 900px;
+            width: 90%;
+            padding: 3.5rem 4rem;
+            background-color: rgba(255, 255, 255, 0.5);
+            border-radius: 8px;
+        }
+        .main-title {
+            font-size: 2.4rem;
+            font-weight: 600;
+            color: #000;
+        }
+        .english-title {
+            font-size: 1.3rem;
+            color: #000;
+            font-style: italic;
+            margin: 1rem 0 2rem;
+        }
+        .author-info {
+            font-size: 1.2rem;
+            color: #000;
+            line-height: 2;
+        }
+        .enter-tip {
+            margin-top: 2rem;
+            font-size: 1rem;
+            color: #333;
+            font-style: italic;
+        }
+        /* 主内容 */
+        #main-content { display: none; }
+        .nav-bar {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 16px;
+            z-index: 999;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .nav-btn {
+            padding: 10px 20px;
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 8px;
+            color: #fff;
+            font-size: 15px;
+            cursor: pointer;
+            backdrop-filter: blur(6px);
+        }
+        .nav-btn.active {
+            background: rgba(158, 143, 184, 0.8);
+            border-color: rgba(158, 143, 184, 1);
+        }
+        /* 页面模块 */
+        .section {
+            display: none;
+            width: 100vw;
+            min-height: 100vh;
+            padding-top: 100px;
+            padding-bottom: 40px;
+        }
+        .section.active {
+            display: block;
+        }
+        /* 案例库 */
+        #case-library { padding-top: 80px; }
+        #page2 {
+            width: 100vw;
+            height: calc(100vh - 80px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 50px;
+            padding: 30px;
+        }
+        .report-desc {
+            max-width: 1000px;
+            background: rgba(0,0,0,0.5);
+            color: #fff;
+            padding: 25px;
+            border-radius: 12px;
+            font-size: 18px;
+            line-height: 2;
+            text-align: center;
+        }
+        .year-container { display: flex; gap: 40px; flex-wrap: wrap; justify-content: center; }
+        .year-card {
+            width: 240px; height: 140px;
+            background: rgba(255,255,255,0.2);
+            backdrop-filter: blur(6px);
+            border-radius: 16px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 36px; font-weight: bold; color: #fff;
+            cursor: pointer; transition: 0.3s;
+        }
+        .year-card:hover {
+            background: rgba(255,255,255,0.4);
+            transform: scale(1.05);
+        }
+        .year-page {
+            width: 100vw; min-height: 100vh;
+            display: none; flex-direction: column;
+            padding: 20px; padding-top: 100px;
+        }
+        .back-btn {
+            position: fixed; top:25px; left:25px;
+            padding:10px 20px; background: rgba(255,255,255,0.2);
+            border:none; border-radius:8px; color:#fff; font-size:16px;
+            cursor: pointer; z-index:99;
+        }
+        .year-title {
+            text-align: center; font-size:40px; color:#fff; margin:20px 0;
+        }
+        .case-slider {
+            display: flex; gap:30px; overflow-x:auto; padding:20px 0;
+            scroll-behavior: smooth;
+        }
+        .case-card {
+            min-width:900px; height:480px;
+            background: rgba(0,0,0,0.6); border-radius:16px;
+            display: flex; padding:25px; gap:25px; flex-shrink:0;
+        }
+        .case-left { width:45%; display:flex; flex-direction:column; align-items:center; gap:12px; }
+        .case-title { font-size:18px; color:#fff; text-align:center; }
+        .case-img { width:100%; height:300px; object-fit:cover; border-radius:12px; }
+        .go-link { padding:12px 28px; background:#1677ff; color:#fff; border:none; border-radius:8px; cursor:pointer; }
+        .case-right { width:55%; height:100%; background:rgba(255,255,255,0.1); border-radius:12px; padding:20px; position:relative; overflow:hidden; }
+        .comment-box { position:absolute; width:calc(100% - 40px); animation: commentLoop 15s linear infinite; }
+        .comment-item { font-size:16px; color:#fff; line-height:2; margin-bottom:15px; }
+        @keyframes commentLoop {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(-50%); }
+        }
+/* —————————————— 图表修复样式：强制高度、清除冲突、自适应 —————————————— */
+ .page-title {
+  font-size: 42px;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 40px;
+  text-shadow: 0 2px 12px rgba(0,0,0,0.4);
+  color: #fff;
+}
+.section-title {
+  font-size: 32px;
+  font-weight: 500;
+  text-align: center;
+  margin: 60px 0 30px;
+  padding-bottom: 15px;
+  border-bottom: 2px solid rgba(255,255,255,0.2);
+  color: #fff;
+}
+.card {
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 20px;
+  padding: 26px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+  /* 去掉 overflow: hidden，允许撑大 */
+}
+.card h3 {
+  font-size: 22px;
+  margin-bottom: 16px;
+  text-align: left;
+  font-weight: 500;
+  color: #fff;
+  border-left: 4px solid #9e8fb8;
+  padding-left: 12px;
+}
+.card .desc {
+  font-size: 14px;
+  line-height: 1.6;
+  color: #e0e0e0;
+  text-align: justify;
+}
+
+/* 🔥 图表容器：允许自动扩大，不被压缩 */
+.chart {
+  width: 100% !important;
+  /* 去掉固定 height，用 min-height 保证下限 */
+  height: auto !important;
+  min-height: 380px !important;
+  position: relative;
+  /* 去掉 overflow: hidden */
+}
+.chart-container {
+  width: 95%;
+  max-width: 1600px; /* 放大最大宽度 */
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+.chart-row-full {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 28px;
+}
+.chart-row-half {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 28px;
+}
+
+/* 🔥 卡片：高度改为 auto + min-height，允许撑高 */
+.chart-card {
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 20px;
+  padding: 28px;
+  /* 关键：高度自适应，不写死 */
+  height: auto !important;
+  min-height: 460px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: none;
+  /* 去掉 overflow: hidden */
+}
+.desc-card {
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 20px;
+  padding: 32px 28px;
+  height: auto !important;
+  min-height: 460px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  box-shadow: none;
+}
+.desc-card p {
+  font-size: 16px;
+  line-height: 1.8;
+  color: #fff;
+  text-align: justify;
+}
+.chart-card h3 {
+  font-size: 24px;
+  margin-bottom: 22px;
+  text-align: center;
+  font-weight: 500;
+  color: #fff;
+  border: none;
+  padding-left: 0;
+}
+
+.container {
+  max-width: 1600px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 24px;
+}
+.row-layout {
+  display: flex;
+  flex-direction: row;
+  gap: 24px;
+  align-items: stretch;
+  flex: 1;
+}
+.row-layout .desc {
+  width: 42%;
+}
+.row-layout .chart {
+  width: 58% !important;
+  height: auto !important;
+  min-height: 380px;
+}
+
+.double-chart {
+  display: flex;
+  flex-direction: row;
+  gap: 24px;
+  flex: 1;
+}
+/* 左右布局图表：允许高度自适应 */
+.chart-pie,
+.chart-bar {
+  width: 100% !important;
+  height: auto !important;
+  min-height: 380px !important;
+}
+.chart-pie {
+  width: 40% !important;
+}
+.chart-bar {
+  width: 60% !important;
+}
+
+.col-6 { grid-column: span 6; }
+.col-12 { grid-column: span 12; }
+
+/* 去掉所有固定 h-xxx 强制高度，改用 min-height */
+.h-420, .h-460, .h-480, .h-520 {
+  height: auto !important;
+  min-height: 460px !important;
+}         /* 组态路径 */
+        .correct-path-panel {
+            position: fixed; top:20px; right:20px; width:340px; z-index:10; display:none;
+        }
+        .correct-path-panel.show { display:block; }
+        .panel-header {
+            background: rgba(158,143,184,0.8); backdrop-filter:blur(8px);
+            color:#fff; padding:12px 18px; border-radius:12px; cursor:pointer;
+            display:flex; justify-content:space-between; align-items:center;
+        }
+        .panel-body {
+            margin-top:6px; background:rgba(0,0,0,0.45); backdrop-filter:blur(12px);
+            border-radius:12px; padding:20px; display:none;
+        }
+        .panel-body.show { display:block; }
+        .panel-body ul { list-style:none; }
+        .panel-body li { color:#b8a8d8; margin:10px 0; font-size:14px; }
+        .intro-modal {
+            position:fixed; top:0; left:0; width:100%; height:100%;
+            background:rgba(0,0,0,0.6); display:none; justify-content:center; align-items:center; z-index:100;
+        }
+        .intro-modal.show { display:flex; }
+        .intro-box {
+            background:rgba(0,0,0,0.55); backdrop-filter:blur(15px); border-radius:20px;
+            padding:40px; width:90%; max-width:600px; color:#fff;
+        }
+        .close-intro {
+            margin-top:30px; padding:12px 30px; background:rgba(158,143,184,0.8);
+            border:none; border-radius:10px; color:#fff; cursor:pointer;
+            display:block; margin:30px auto 0;
+        }
+        .config-container { max-width:1000px; margin:0 auto; display:flex; flex-direction:column; align-items:center; gap:40px; }
+        .button-card {
+            background:rgba(0,0,0,0.45); backdrop-filter:blur(12px); border-radius:20px;
+            padding:40px 30px; width:100%;
+        }
+        .button-row { display:flex; flex-wrap:wrap; gap:14px; justify-content:center; margin-bottom:20px; }
+        .condition-btn {
+            padding:14px 22px; background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2);
+            border-radius:10px; color:#fff; font-size:15px; cursor:pointer;
+        }
+        .condition-btn.active { background:rgba(158,143,184,0.6); border-color:rgba(158,143,184,1); }
+        .confirm-btn {
+            padding:16px 48px; background:rgba(158,143,184,0.8); border:none; border-radius:12px;
+            color:#fff; font-size:18px; cursor:pointer;
+        }
+        .result-modal {
+            position:fixed; top:0; left:0; width:100%; height:100%;
+            background:rgba(0,0,0,0.7); display:none; justify-content:center; align-items:center; z-index:99;
+        }
+        .result-modal.show { display:flex; }
+        .result-box {
+            background:rgba(0,0,0,0.55); backdrop-filter:blur(15px); border-radius:20px;
+            padding:45px; width:90%; max-width:850px; color:#fff;
+        }
+        .error-text { color:#e8a8b8; font-weight:bold; }
+        .close-result {
+            padding:12px 32px; background:rgba(158,143,184,0.7); border:none; border-radius:10px;
+            color:#fff; cursor:pointer; display:block; margin:30px auto 0;
+        }
+        /* 治理建议 */
+        .suggest-container {
+            max-width:1600px; margin:0 auto; display:flex; gap:30px; flex-wrap:wrap;
+        }
+        .suggest-card {
+            flex:1; min-width:300px; background:rgba(0,0,0,0.45); backdrop-filter:blur(12px);
+            border-radius:20px; padding:40px 30px;
+        }
+        .suggest-title {
+            font-size:18px; font-weight:bold; color:#b8a8d8; margin-bottom:24px;
+            padding-bottom:12px; border-bottom:1px solid rgba(158,143,184,0.4);
+        }
+        .suggest-content { font-size:15px; color:#eaeaea; line-height:1.9; text-align:justify; }
+        /* 响应式 */
+        @media (max-width: 1024px) {
+            .col-6 { grid-column: span 12; }
+            .row-layout, .double-chart { flex-direction: column; }
+            .row-layout .desc, .row-layout .chart, .double-chart .chart-pie, .double-chart .chart-bar { width: 100% !important; }
+            .chart-row-full, .chart-row-half { grid-template-columns: 1fr; }
+            .case-card { min-width: 90%; flex-direction: column; height: auto; }
+            .case-left, .case-right { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+<!-- 封面 -->
+<div class="cover-container" id="cover-page" onclick="enterMain()">
+    <div class="content-wrapper">
+        <h1 class="main-title">SCCT理论下高校负面舆情回应有效性研究</h1>
+        <p class="english-title">Research on the Effectiveness of Negative University Public Opinion under the SCCT Theory</p>
+        <div class="author-info">
+            <p>作者：何雨馨</p>
+            <p>学院：中国传媒大学新闻学院</p>
+            <p>导师：贾奇凡 副教授</p>
+        </div>
+        <p class="enter-tip">点击页面进入 →</p>
+    </div>
+</div>
+<!-- 主内容 -->
+<div id="main-content">
+    <div class="nav-bar">
+        <button class="nav-btn active" onclick="goSection('case')">案例库</button>
+        <button class="nav-btn" onclick="goSection('chart')">数据图表</button>
+        <button class="nav-btn" onclick="goSection('config')">组态路径</button>
+        <button class="nav-btn" onclick="goSection('suggest')">治理建议</button>
+        <button class="nav-btn" onclick="backToCover()">返回封面</button>
+    </div>
+
+    <!-- ====================== 以下是【纯替换】的案例库部分，其余完全不动 ====================== -->
+    <!-- 1. 案例库 -->
+    <div class="section active" id="case">
+        <div id="case-library">
+            <div id="page2">
+                <div class="report-desc">
+                    在社交媒体深度嵌入社会生活的当下，高校负面网络舆情频发，对高校声誉造成严峻挑战。本报告以“知微事见”舆情平台为基础案例库，参考人民网舆情数据中心等多方平台信息，选取2023—2025年间典型高校负面舆情事件作为研究样本进行分析与呈现。
+                </div>
+                <div class="year-container">
+                    <div class="year-card" onclick="goYear(2023)">2023</div>
+                    <div class="year-card" onclick="goYear(2024)">2024</div>
+                    <div class="year-card" onclick="goYear(2025)">2025</div>
+                </div>
+            </div>
+
+            <div class="year-page" id="year2023">
+                <button class="back-btn" onclick="backToPage2()">← 返回年份选择</button>
+                <h2 class="year-title">2023年度高校舆情案例库</h2>
+                <div class="case-slider">
+                    <!-- 案例1：苏州大学回应学生恶意P图 -->
+                    <div class="case-card">
+                        <div class="case-left">
+                            <img class="case-img" src="苏大黄谣.png">
+                            <div class="case-title">苏州大学回应学生恶意P图</div>
+                            <button class="go-link" onclick="window.open('https://weibo.com/1007298497/MxU0gdVSX','_blank')">官方详情</button>
+                        </div>
+                        <div class="case-right">
+                            <div class="comment-box">
+                                <div class="comment-item">1. 不是简单的传播，而且制作、传播，这里面的区别太大了</div>
+                                <div class="comment-item">2. 骇人听闻，看完九张图，这哪里是一学生恶意P图侮辱女性，这是犯罪分子隐藏很深被当事人千辛万苦抓获！</div>
+                                <div class="comment-item">3. 为什么要女孩自证，警察不是更容易查到吗？</div>
+                                <div class="comment-item">4. 十天，如此轻微！那些还站在他那一边的人，在把他推往更邪恶的地方。</div>
+                                <div class="comment-item">5. 女生很勇敢，受害者真的太难了</div>
+                                <div class="comment-item">6. 女孩子真棒聪明、条理清晰，可惜处罚太不给力了</div>
+                                <div class="comment-item">7. 这种恶意P图侮辱他人的行为必须严惩</div>
+                                <div class="comment-item">8. 高校必须加强学生法治教育和道德底线教育</div>
+                            </div>
+                        </div>
+                    </div>
+<!-- 案例2：太原理工大学教授郑强被举报婚内出轨 -->
+        <div class="case-card">
+            <div class="case-left">
+                <img class="case-img" src="郑强谣言.jpg">
+                <div class="case-title">太原理工大学教授郑强被举报婚内出轨</div>
+                <button class="go-link" onclick="window.open('https://ef.zhiweidata.com/event/94997c169b71b14e10092949/profileV2','_blank')">舆情详情</button>
+            </div>
+            <div class="case-right">
+                <div class="comment-box">
+                    <div class="comment-item">1. 如果是真的，看来美人计百试百灵，有些干部管不住自己</div>
+                    <div class="comment-item">2. 问题是郑为啥会和他见面</div>
+                    <div class="comment-item">3. 陌生人要求1000万，为什么不报警？事出必有因</div>
+                    <div class="comment-item">4. 各位，谨记朱军之事件。让子弹飞一会</div>
+                    <div class="comment-item">5. 这种举报如果没有实锤，很容易构成诽谤</div>
+                    <div class="comment-item">6. 公众人物更要注意自己的言行举止</div>
+                    <div class="comment-item">7. 师德师风是教师的立身之本</div>
+                    <div class="comment-item">8. 等待官方调查结果，不信谣不传谣</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 案例3：人大回应网传学生个人信息被泄露 -->
+        <div class="case-card">
+            <div class="case-left">
+                <img class="case-img" src="人大泄漏.png">
+                <div class="case-title">人大回应网传学生个人信息被泄露</div>
+                <button class="go-link" onclick="window.open('https://ef.zhiweidata.com/event/c3756e32d7715e3b10075565/profileV2','_blank')">舆情详情</button>
+            </div>
+            <div class="case-right">
+                <div class="comment-box">
+                    <div class="comment-item">1. 他不是没有法律意识，看最后一张图，知法犯法，罪加一等</div>
+                    <div class="comment-item">2. 一键脱衣这个怎么解释？这个男的开发初衷难道不是针对女生</div>
+                    <div class="comment-item">3. 有点怕他搜集腾讯客户信息再建个网站</div>
+                    <div class="comment-item">4. 人家明明说的是全体同学，到你这就是女生了，别搞性别对立</div>
+                    <div class="comment-item">5. 学生信息安全是高校必须守住的底线</div>
+                    <div class="comment-item">6. 数据泄露危害极大，必须严肃处理</div>
+                    <div class="comment-item">7. 高校信息安全管理体系急需完善</div>
+                    <div class="comment-item">8. 保护学生隐私是学校不可推卸的责任</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 案例4：南华大学回应网传男生造女生黄谣 -->
+        <div class="case-card">
+            <div class="case-left">
+                <img class="case-img" src="南华黄谣.jpg">
+                <div class="case-title">南华大学回应网传男生造女生黄谣</div>
+                <button class="go-link" onclick="window.open('https://weibo.com/5078502209/MyhqAC89j?refer_flag=1001030103_','_blank')">官方详情</button>
+            </div>
+            <div class="case-right">
+                <div class="comment-box">
+                    <div class="comment-item">1. 还盈利了，不但开除学籍还得坐牢</div>
+                    <div class="comment-item">2. 他真的是变态 最好终身留案底 所有公司都不要他</div>
+                    <div class="comment-item">3. 做人都做不好，还读大学。读球的大学。</div>
+                    <div class="comment-item">4. 造黄谣毁女生一生，这种人必须付出代价</div>
+                    <div class="comment-item">5. 网络不是法外之地，造谣必须严惩</div>
+                    <div class="comment-item">6. 强烈支持开除，这种人不配当大学生</div>
+                    <div class="comment-item">7. 校园反网络暴力教育刻不容缓</div>
+                    <div class="comment-item">8. 保护女性，拒绝黄谣和网络暴力</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 案例5：华南理工大学一博士被传介入导师婚姻 -->
+        <div class="case-card">
+            <div class="case-left">
+                <img class="case-img" src="华南理工学术妲己.jpg">
+                <div class="case-title">华南理工大学一博士被传介入导师婚姻</div>
+                <button class="go-link" onclick="window.open('https://ef.zhiweidata.com/event/957620e526e9530b10073935/profileV2','_blank')">舆情详情</button>
+            </div>
+            <div class="case-right">
+                <div class="comment-box">
+                    <div class="comment-item">1. 表面师生恋，底下利益交换</div>
+                    <div class="comment-item">2. 禁止师生恋才是正确的措施</div>
+                    <div class="comment-item">3. 这是权色交易、学术腐败，不是师生恋！</div>
+                    <div class="comment-item">4. 纵容师生恋就是鼓励利益交换，是赤裸裸的不公平</div>
+                    <div class="comment-item">5. 师生边界必须清晰，不能越界</div>
+                    <div class="comment-item">6. 学术圈必须严肃整治不正之风</div>
+                    <div class="comment-item">7. 师德师风建设永远在路上</div>
+                    <div class="comment-item">8. 高校必须明确师生交往红线</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 案例6：长江大学回应主题讲座播放不雅视频 -->
+        <div class="case-card">
+            <div class="case-left">
+                <img class="case-img" src="长江不雅.png">
+                <div class="case-title">长江大学回应主题讲座播放不雅视频</div>
+                <button class="go-link" onclick="window.open('https://ef.zhiweidata.com/event/dd481371a9beed1010079235/profileV2','_blank')">舆情详情</button>
+            </div>
+            <div class="case-right">
+                <div class="comment-box">
+                    <div class="comment-item">1. 播放列表未清除，自动播放下一个了，调查完毕</div>
+                    <div class="comment-item">2. 睁着眼睛说瞎话，我假装信了</div>
+                    <div class="comment-item">3. 太看不起病毒了，入侵就为放小黄片？</div>
+                    <div class="comment-item">4. 这种低级错误不应该出现在正式讲座上</div>
+                    <div class="comment-item">5. 审核太不严格，管理出现严重漏洞</div>
+                    <div class="comment-item">6. 希望学校能给个真实的调查结果</div>
+                    <div class="comment-item">7. 校园活动内容审核必须严格把关</div>
+                    <div class="comment-item">8. 公共场合管理不能有任何疏忽</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 案例7：中山大学贫困生炫富 -->
+        <div class="case-card">
+            <div class="case-left">
+                <img class="case-img" src="中大炫富.jpg">
+                <div class="case-title">中山大学贫困生炫富</div>
+                <button class="go-link" onclick="window.open('https://ef.zhiweidata.com/event/d6086a98820eb89c10080708/profileV2','_blank')">舆情详情</button>
+            </div>
+            <div class="case-right">
+                <div class="comment-box">
+                    <div class="comment-item">1. 助学金是给真正需要的人的，不是用来炫富的资本</div>
+                    <div class="comment-item">2. 占用贫困生名额，让真正困难的学生得不到帮助</div>
+                    <div class="comment-item">3. 学校的审核机制肯定有问题</div>
+                    <div class="comment-item">4. 建议建立动态监督机制，定期核查消费情况</div>
+                    <div class="comment-item">5. 贫困生身份不是保护伞，更不能炫耀</div>
+                    <div class="comment-item">6. 助学金评定公平性必须得到保障</div>
+                    <div class="comment-item">7. 高校资助审核机制急需完善</div>
+                    <div class="comment-item">8. 珍惜资助机会，不要浪费社会爱心</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 案例8：南京晓庄学院校领导被举报不正当关系 -->
+        <div class="case-card">
+            <div class="case-left">
+                <img class="case-img" src="晓庄乱搞.png">
+                <div class="case-title">南京晓庄学院校领导被举报与他人保持不正当男女关系</div>
+                <button class="go-link" onclick="window.open('https://ef.zhiweidata.com/event/e650927a571e566510092131/profileV2','_blank')">舆情详情</button>
+            </div>
+            <div class="case-right">
+                <div class="comment-box">
+                    <div class="comment-item">1. 校领导被举报私生活违纪违法，必须严查</div>
+                    <div class="comment-item">2. 高校干部作风与廉洁形象备受关注</div>
+                    <div class="comment-item">3. 他俩是不是以为电梯里没监控啊？</div>
+                    <div class="comment-item">4. 中年玩的比年轻人还开放</div>
+                    <div class="comment-item">5. 希望调查公开透明，给公众一个交代</div>
+                    <div class="comment-item">6. 干部纪律作风必须严格要求</div>
+                    <div class="comment-item">7. 师德师风不仅针对老师，领导更要带头</div>
+                    <div class="comment-item">8. 违纪必究，才能维护教育系统公信力</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 案例9：东南大学一领导被曝工作群发色情照 -->
+        <div class="case-card">
+            <div class="case-left">
+                <img class="case-img" src="东南领导发色情照.jpg">
+                <div class="case-title">东南大学一领导被曝工作群发色情照</div>
+                <button class="go-link" onclick="window.open('https://ef.zhiweidata.com/event/63744b35b4cae04910071899/profileV2','_blank')">舆情详情</button>
+            </div>
+            <div class="case-right">
+                <div class="comment-box">
+                    <div class="comment-item">1. 这面相 纵欲过度的样子</div>
+                    <div class="comment-item">2. 就这种道貌岸然的货还马克思主义学院院长？</div>
+                    <div class="comment-item">3. 教育领域的作风问题必须好好整顿</div>
+                    <div class="comment-item">4. 工作群发色情照，性质极其恶劣</div>
+                    <div class="comment-item">5. 严重影响了党的声誉，必须严肃处理</div>
+                    <div class="comment-item">6. 领导干部要以身作则，严守纪律</div>
+                    <div class="comment-item">7. 立即免职处理大快人心</div>
+                    <div class="comment-item">8. 高校干部纪律教育必须再升级</div>
+                </div>
+            </div>
+        </div>
+
+                    <!-- 案例10：郑州大学回应女子称11年前遭老师侵犯 -->
+                    <div class="case-card">
+                        <div class="case-left">
+                            <img class="case-img" src="郑大侵犯.png">
+                            <div class="case-title">郑州大学回应女子称11年前遭老师侵犯</div>
+                            <button class="go-link" onclick="window.open('https://ef.zhiweidata.com/event/9e2d64bdd73a317710072640/profileV2','_blank')">舆情详情</button>
+                        </div>
+                        <div class="case-right">
+                            <div class="comment-box">
+                                <div class="comment-item">1. 她能正常活下来就需要很大很大的勇气</div>
+                                <div class="comment-item">2. 被侵犯不是耻辱，可惜的是她11年青春</div>
+                                <div class="comment-item">3. 虽然但是，没证据啊。还是该第一时间报警</div>
+                                <div class="comment-item">4. 别问为什么隐忍11年，问就是讨好型人格</div>
+                                <div class="comment-item">5. 校园性骚扰必须零容忍</div>
+                                <div class="comment-item">6. 保护受害者，严查真相是基本责任</div>
+                                <div class="comment-item">7. 高校必须建立长效反性骚扰机制</div>
+                                <div class="comment-item">8. 师德底线绝对不能突破</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="year-page" id="year2024">
+                <button class="back-btn" onclick="backToPage2()">← 返回年份选择</button>
+                <h2 class="year-title">2024年度高校舆情案例库</h2>
+                <div class="case-slider">
+                    <!-- 案例1：华中农业大学学生举报导师学术造假 -->
+                    <div class="case-card">
+                        <div class="case-left">
+                            <img class="case-img" src="华中农业造假.jpg">
+                            <div class="case-title">华中农业大学学生举报导师学术造假</div>
+                            <button class="go-link" onclick="window.open('https://ef.zhiweidata.com/event/4340cea8e0be959810082199/profileV2','_blank')">舆情详情</button>
+                        </div>
+                        <div class="case-right">
+                            <div class="comment-box">
+                                <div class="comment-item">1. 举报信是写给学校的，为什么学院在回应舆论的时候会说“关注到网上”？</div>
+                                <div class="comment-item">2. 哪里有压迫，哪里就有反抗</div>
+                                <div class="comment-item">3. 不在沉默中爆发，就在沉默中委屈。</div>
+                                <div class="comment-item">4. 生物学试验重复性很低的</div>
+                                <div class="comment-item">5. 他们拼着前途揭穿学术骗局，希望不要让事件湮灭</div>
+                                <div class="comment-item">6. 拒绝麻木，不做冷漠的看客</div>
+                                <div class="comment-item">7. 黄教授存在学术造假、私吞科研经费</div>
+                                <div class="comment-item">8. 学校撤销其职务、解除聘用合同</div>
+                            </div>
+                        </div>
+                    </div>
+<!-- 案例2：人大文学院在读博士举报导师性骚扰 -->
+<div class="case-card">
+    <div class="case-left">
+        <img class="case-img" src="人大性骚扰.jpg">
+        <div class="case-title">人大文学院在读博士举报导师性骚扰</div>
+        <button class="go-link" onclick="window.open('https://ef.zhiweidata.com/event/1ca751b417de062010086255/profileV2','_blank')">舆情详情</button>
+    </div>
+    <div class="case-right">
+        <div class="comment-box">
+            <div class="comment-item">1. 高校再不整治，真成藏污纳垢之处了</div>
+            <div class="comment-item">2. 女生提前录音是保留证据，有勇有谋</div>
+            <div class="comment-item">3. 道貌岸然，衣冠禽兽，不配为人师</div>
+            <div class="comment-item">4. 学历与人品不成正比，高学历不代表好人</div>
+            <div class="comment-item">5. 这不是第一次，多少女孩忍了下来</div>
+            <div class="comment-item">6. 建议高校建立类似医院的伦理委员会</div>
+            <div class="comment-item">7. 一定要严惩，还学生公道</div>
+            <div class="comment-item">8. 等官方通报，不造谣不传谣</div>
+        </div>
+    </div>
+</div>
+
+<!-- 案例3：河南大学大礼堂着火 -->
+<div class="case-card">
+    <div class="case-left">
+        <img class="case-img" src="河南礼堂着火.png">
+        <div class="case-title">河南大学大礼堂着火</div>
+        <button class="go-link" onclick="window.open('https://ef.zhiweidata.com/event/120d97e63d89828b10084978/profileV2','_blank')">舆情详情</button>
+    </div>
+    <div class="case-right">
+        <div class="comment-box">
+            <div class="comment-item">1. 媒体用“疑有”做标题，是在博流量带节奏</div>
+            <div class="comment-item">2. 百年文物，战火没毁，毁于修缮施工</div>
+            <div class="comment-item">3. 必须查明原因，严惩责任人</div>
+            <div class="comment-item">4. 施工人员吸烟乱扔烟头可能性极大</div>
+            <div class="comment-item">5. 文物不可再生，加强保护刻不容缓</div>
+            <div class="comment-item">6. 校方消防安全只停留在口号</div>
+            <div class="comment-item">7. 河大校友痛心，校殇难平</div>
+            <div class="comment-item">8. 严查施工方与校方是否存在利益输送</div>
+        </div>
+    </div>
+</div>
+
+<!-- 案例4：学生举报高校称助学金名额被挤掉 -->
+<div class="case-card">
+    <div class="case-left">
+        <img class="case-img" src="助学金挤掉.png">
+        <div class="case-title">学生举报高校称助学金名额被挤掉</div>
+        <button class="go-link" onclick="window.open('https://ef.zhiweidata.com/event/1253cc022b8dcd7d10079425/profileV2','_blank')">舆情详情</button>
+    </div>
+    <div class="case-right">
+        <div class="comment-box">
+            <div class="comment-item">1. 所述不实，事情会反转，我们一个学校的</div>
+            <div class="comment-item">2. 建档立卡、孤儿直接认定一等助学金</div>
+            <div class="comment-item">3. 学校只想着下架视频，撇清责任</div>
+            <div class="comment-item">4. 贫困生评定靠关系，有钱人领补助</div>
+            <div class="comment-item">5. 助学金靠人缘投票，班长引导操控</div>
+            <div class="comment-item">6. 老实人被欺负，豁出去才敢发声</div>
+            <div class="comment-item">7. 连助学金都作假，良心何在</div>
+            <div class="comment-item">8. 全国高校都该严查此类乱象</div>
+        </div>
+    </div>
+</div>
+
+<!-- 案例5：南方医科大学一教师因救人迟到受处分 -->
+<div class="case-card">
+    <div class="case-left">
+        <img class="case-img" src="南科大处分.jpg">
+        <div class="case-title">南方医科大学一教师因救人迟到受处分</div>
+        <button class="go-link" onclick="window.open('https://ef.zhiweidata.com/event/685e3d6cc3759c0c10085723/profileV2','_blank')">舆情详情</button>
+    </div>
+    <div class="case-right">
+        <div class="comment-box">
+            <div class="comment-item">1. 29分钟课=一条人命，真不值钱</div>
+            <div class="comment-item">2. 救死扶伤是天职，却被定为教学事故</div>
+            <div class="comment-item">3. 校方通报冰冷，毫无医者仁心</div>
+            <div class="comment-item">4. 是留学生班级举报，校方怕得罪洋人</div>
+            <div class="comment-item">5. 外行指导内行，行政凌驾专业</div>
+            <div class="comment-item">6. 规矩大于人命，教条主义寒心</div>
+            <div class="comment-item">7. 老师用行动上了最好的医德课</div>
+            <div class="comment-item">8. 应撤销处分，表彰见义勇为</div>
+        </div>
+    </div>
+</div>
+
+<!-- 案例6：淄博女生举报山东理工大学教师出轨 -->
+<div class="case-card">
+    <div class="case-left">
+        <img class="case-img" src="山理出轨.png">
+        <div class="case-title">淄博女生举报山东理工大学教师出轨</div>
+        <button class="go-link" onclick="window.open('https://ef.zhiweidata.com/event/20ebb0a03725291310092130/profileV2','_blank')">舆情详情</button>
+    </div>
+    <div class="case-right">
+        <div class="comment-box">
+            <div class="comment-item">1. 教师婚内出轨未成年人，道德败坏</div>
+            <div class="comment-item">2. 17岁未成年，必须保护权益</div>
+            <div class="comment-item">3. 教师威胁女孩父母，无耻无下限</div>
+            <div class="comment-item">4. 学校装死不处理，严重影响形象</div>
+            <div class="comment-item">5. 高校教师应以身作则，严守师德</div>
+            <div class="comment-item">6. 宾馆怎能给未成年人开房</div>
+            <div class="comment-item">7. 支持女生维权，勇敢站出来</div>
+            <div class="comment-item">8. 必须严肃处理，清理教师队伍</div>
+        </div>
+    </div>
+</div>
+
+<!-- 案例7：金华职业技术大学女教师被举报出轨学生 -->
+<div class="case-card">
+    <div class="case-left">
+        <img class="case-img" src="金华出轨.jpg">
+        <div class="case-title">金华职业技术大学女教师被举报出轨学生</div>
+        <button class="go-link" onclick="window.open('https://ef.zhiweidata.com/event/809d54a73bec297b10092044/profileV2','_blank')">舆情详情</button>
+    </div>
+    <div class="case-right">
+        <div class="comment-box">
+            <div class="comment-item">1. 小仙女就算出轨了也不会承认</div>
+            <div class="comment-item">2. 不是她怎么会马上被开除</div>
+            <div class="comment-item">3. 建议直接报警，真相自然出来</div>
+            <div class="comment-item">4. 监控视频是她，不雅视频不是她</div>
+            <div class="comment-item">5. 丈夫闹离婚，曝光视频报复</div>
+            <div class="comment-item">6. 正经老师不会和学生单独开房</div>
+            <div class="comment-item">7. 无风不起浪，师德败坏</div>
+            <div class="comment-item">8. 只信警方蓝底白字通报</div>
+        </div>
+    </div>
+</div>
+
+<!-- 案例8：吉林一高校女生带病出操后死亡 -->
+<div class="case-card">
+    <div class="case-left">
+        <img class="case-img" src="吉林女生死亡.png">
+        <div class="case-title">吉林一高校女生带病出操后死亡</div>
+        <button class="go-link" onclick="window.open('https://ef.zhiweidata.com/event/400ed4228a5c321510084560/profileV2','_blank')">舆情详情</button>
+    </div>
+    <div class="case-right">
+        <div class="comment-box">
+            <div class="comment-item">1. 更讽刺的是，这是医学院，医院就在对面</div>
+            <div class="comment-item">2. 导员明知有病仍强迫出操，晕倒不让施救</div>
+            <div class="comment-item">3. 错过黄金抢救时间，等同于故意杀人</div>
+            <div class="comment-item">4. 学校威胁学生，不准外传，否则不发毕业证</div>
+            <div class="comment-item">5. 辅导员收礼、刁难学生，早有劣迹</div>
+            <div class="comment-item">6. 中国学生被规训得太听话，不敢反抗</div>
+            <div class="comment-item">7. 形式主义早操，漠视生命健康</div>
+            <div class="comment-item">8. 必须追究刑责，还女孩公道</div>
+        </div>
+    </div>
+</div>
+
+<!-- 案例9：清华大学辟谣80%毕业生出国 -->
+<div class="case-card">
+    <div class="case-left">
+        <img class="case-img" src="清华辟谣.png">
+        <div class="case-title">清华大学辟谣80%毕业生出国</div>
+        <button class="go-link" onclick="window.open('https://ef.zhiweidata.com/event/ab14b77937d2223910082150/profileV2','_blank')">舆情详情</button>
+    </div>
+    <div class="case-right">
+        <div class="comment-box">
+            <div class="comment-item">1. 清华92%毕业生在国内工作</div>
+            <div class="comment-item">2. 网传80%出国是谣言，数据不实</div>
+            <div class="comment-item">3. 国内高科技公司薪资已高于美国</div>
+            <div class="comment-item">4. 现在欧美限制华人进入核心实验室</div>
+            <div class="comment-item">5. 清华在偷换概念，未说出国回国比例</div>
+            <div class="comment-item">6. 2002-2011级出国校友62.8%已回国</div>
+            <div class="comment-item">7. 人才选择自由，不犯法不必苛责</div>
+            <div class="comment-item">8. 造谣者吃烂流量，误导公众</div>
+        </div>
+    </div>
+</div>
+
+<!-- 案例10：南大复试刷掉初试第一东南虐猫哥 -->
+<div class="case-card">
+    <div class="case-left">
+        <img class="case-img" src="东南虐猫哥.png">
+        <div class="case-title">南大复试刷掉初试第一东南虐猫哥</div>
+        <button class="go-link" onclick="window.open('https://ef.zhiweidata.com/event/48215ed4698e71a110084320/profileV2','_blank')">舆情详情</button>
+    </div>
+    <div class="case-right">
+        <div class="comment-box">
+            <div class="comment-item">1. 东南大学学生被曝残忍虐猫，心理扭曲</div>
+            <div class="comment-item">2. 虐猫反映对生命漠视，德不配位</div>
+            <div class="comment-item">3. 支持南大拒收，品德比分数重要</div>
+            <div class="comment-item">4. 高校招生应德才兼备，以德为先</div>
+            <div class="comment-item">5. 外网发表反社会言论，性质恶劣</div>
+            <div class="comment-item">6. 法无禁止也不能胡作非为</div>
+            <div class="comment-item">7. 建议立法保护伴侣动物，严惩虐杀</div>
+            <div class="comment-item">8. 给改过机会，但不应录取进名校</div>
+        </div>
+    </div>
+</div>
+
+<!-- 案例11：湘潭大学回应网传学生偷外卖被毒死 -->
+<div class="case-card">
+    <div class="case-left">
+        <img class="case-img" src="湘潭谣言.jpg">
+        <div class="case-title">湘潭大学回应网传学生偷外卖被毒死</div>
+        <button class="go-link" onclick="window.open('https://ef.zhiweidata.com/event/a62657451b0d51d210084618/profileV2','_blank')">舆情详情</button>
+    </div>
+    <div class="case-right">
+        <div class="comment-box">
+            <div class="comment-item">1. 网传偷外卖投毒致死是谣言，警方已辟谣</div>
+            <div class="comment-item">2. 实为室友投毒，与外卖无关</div>
+            <div class="comment-item">3. 造谣者给死者泼脏水，良心何在</div>
+            <div class="comment-item">4. 受害者善良优秀，并非小偷</div>
+            <div class="comment-item">5. 多次申请换寝室未果，矛盾激化</div>
+            <div class="comment-item">6. 秋水仙碱剧毒，少量即可致死</div>
+            <div class="comment-item">7. 必须严惩造谣者与凶手</div>
+            <div class="comment-item">8. 校园宿舍安全与矛盾调解亟待加强</div>
+        </div>
+    </div>
+</div>
+
+<!-- 案例12：济南大学超市老板要求食堂涨价 -->
+<div class="case-card">
+    <div class="case-left">
+        <img class="case-img" src="济大涨价.png">
+        <div class="case-title">济南大学超市老板要求食堂涨价</div>
+        <button class="go-link" onclick="window.open('https://ef.zhiweidata.com/event/82c7272598ed986910088490/profileV2','_blank')">舆情详情</button>
+    </div>
+    <div class="case-right">
+        <div class="comment-box">
+            <div class="comment-item">1. 泡面3.5元，别家卖11元，被恶意排挤</div>
+            <div class="comment-item">2. 超市断水断电，逼迫良心商家撤离</div>
+            <div class="comment-item">3. 学校后勤与超市存在利益勾结</div>
+            <div class="comment-item">4. 校园垄断，割学生韭菜，吃相难看</div>
+            <div class="comment-item">5. 劣币驱逐良币，便宜好吃的都被赶走</div>
+            <div class="comment-item">6. 承包学校超市的多是领导关系户</div>
+            <div class="comment-item">7. 校方以超范围经营为借口，包庇恶商</div>
+            <div class="comment-item">8. 高校食堂应公益属性，不应暴利</div>
+        </div>
+    </div>
+</div>
+
+<!-- 案例13：台州一高校发生汽车冲撞行人事件 -->
+<div class="case-card">
+    <div class="case-left">
+        <img class="case-img" src="台大撞人.jpg">
+        <div class="case-title">台州一高校发生汽车冲撞行人事件</div>
+        <button class="go-link" onclick="window.open('https://ef.zhiweidata.com/event/4607084357e86e4410083963/profileV2','_blank')">舆情详情</button>
+    </div>
+    <div class="case-right">
+        <div class="comment-box">
+            <div class="comment-item">1. 男学生校内开车故意冲撞行人</div>
+            <div class="comment-item">2. 校园交通安全管理严重缺失</div>
+            <div class="comment-item">3. 车辆随意进入教学区，风险极大</div>
+            <div class="comment-item">4. 事件造成伤亡，性质恶劣</div>
+            <div class="comment-item">5. 警方已介入，调查事故原因</div>
+            <div class="comment-item">6. 必须加强校园车辆管控</div>
+            <div class="comment-item">7. 保障师生行走安全是底线</div>
+            <div class="comment-item">8. 从严处理，以儆效尤</div>
+        </div>
+    </div>
+</div>
+
+<!-- 案例14：鲁东大学一学生疑被冰锥砸中倒地 -->
+<div class="case-card">
+    <div class="case-left">
+        <img class="case-img" src="鲁东冰锥.png">
+        <div class="case-title">鲁东大学一学生疑被冰锥砸中倒地</div>
+        <button class="go-link" onclick="window.open('https://ef.zhiweidata.com/event/9170ca478c74c44710081749/profileV2','_blank')">舆情详情</button>
+    </div>
+    <div class="case-right">
+        <div class="comment-box">
+            <div class="comment-item">1. 天降冰锥砸中学生，飞来横祸</div>
+            <div class="comment-item">2. 建筑物所有人与管理人负有全责</div>
+            <div class="comment-item">3. 学校未及时清理冰溜子，管理失职</div>
+            <div class="comment-item">4. 刚考完研，前途光明，太可惜</div>
+            <div class="comment-item">5. 北方冬季冰锥危险，应提前排查</div>
+            <div class="comment-item">6. 愿逝者安息，家属节哀</div>
+            <div class="comment-item">7. 学校应承担赔偿与管理责任</div>
+            <div class="comment-item">8. 世事无常，明天和意外不知哪个先来</div>
+        </div>
+    </div>
+</div>
+
+                    <!-- 案例15：高校要求手抄毕业论文引学生不满 -->
+                    <div class="case-card">
+                        <div class="case-left">
+                            <img class="case-img" src="手抄毕业论文.jpg">
+                            <div class="case-title">高校要求手抄毕业论文引学生不满</div>
+                            <button class="go-link" onclick="window.open('https://ef.zhiweidata.com/event/5a361dc3ac4eb09110084786/profileV2','_blank')">舆情详情</button>
+                        </div>
+                        <div class="case-right">
+                            <div class="comment-box">
+                                <div class="comment-item">1. 要求手抄数万字论文，纯属形式主义</div>
+                                <div class="comment-item">2. 数字化时代，手抄毫无意义，浪费精力</div>
+                                <div class="comment-item">3. 论文看质量不看书写，本末倒置</div>
+                                <div class="comment-item">4. 学生强烈不满，呼吁取消不合理规定</div>
+                                <div class="comment-item">5. 形式主义泛滥，教育脱离实际</div>
+                                <div class="comment-item">6. 校方不尊重学生时间与劳动</div>
+                                <div class="comment-item">7. 应回归教育本质，摒弃无用形式</div>
+                                <div class="comment-item">8. 希望高校听取意见，优化管理制度</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="year-page" id="year2025">
+                <button class="back-btn" onclick="backToPage2()">← 返回年份选择</button>
+                <h2 class="year-title">2025年度高校舆情案例库</h2>
+                <div class="case-slider">
+                    <!-- 案例1：武汉大学图书馆性骚扰事件 -->
+                    <div class="case-card">
+                        <div class="case-left">
+                            <img class="case-img" src="武大图书馆.jpg">
+                            <div class="case-title">武汉大学图书馆性骚扰事件</div>
+                            <button class="go-link" onclick="window.open('https://ef.zhiweidata.com/event/70a3c9734eddedc810092581/profileV2','_blank')">舆情详情</button>
+                        </div>
+                        <div class="case-right">
+                            <div class="comment-box">
+                                <div class="comment-item">1. 我把这个视频给一个今年马上就要上大学的男生看，他的第一反应，就是这个男生在挠痒痒。他说，打飞机不是这个姿势。</div>
+                                <div class="comment-item">2. 这个动作更像是按压止痒，这样止痒是不想被别人看见，动作不大，又能暂时缓解瘙痒的效果</div>
+                                <div class="comment-item">3. 偷拍男孩下体的变态狂，还倒打一耙诱供威胁人家写道歉书，还曝光在网上网暴男生</div>
+                                <div class="comment-item">4. 这是左手打飞机，其实右手会更好，而且姿势很不对，不得劲</div>
+                                <div class="comment-item">5. 哪位绅士会隔着裤子打，根本不可能</div>
+                                <div class="comment-item">6. 这男生本就有皮肤痒症，股癣湿疹痒起来真的很难忍</div>
+                                <div class="comment-item">7. 明显就是挠痒啊，正常人都能看出来</div>
+                                <div class="comment-item">8. 女生盯着男生裆部拍两个小时，这才是真正的性骚扰</div>
+                            </div>
+                        </div>
+                    </div>
+<!-- 案例2：协和“4+4”模式引争议 -->
+    <div class="case-card">
+        <div class="case-left">
+            <img class="case-img" src="协和.jpg">
+            <div class="case-title">协和“4+4”模式引争议</div>
+            <button class="go-link" onclick="window.open('https://ef.zhiweidata.com/event/2772d9b48003243910090999/profileV2','_blank')">舆情详情</button>
+        </div>
+        <div class="case-right">
+            <div class="comment-box">
+                <div class="comment-item">1. 支持中纪委介入调查协和4+4项目</div>
+                <div class="comment-item">2. 这会儿央媒都集体沉默了，不敢发声</div>
+                <div class="comment-item">3. 强烈支持！请把我们的命当命！严查医疗特权</div>
+                <div class="comment-item">4. 4+4就是为权贵子弟量身定制的上升通道</div>
+                <div class="comment-item">5. 非医学专业四年速成博士，这是拿患者生命开玩笑</div>
+                <div class="comment-item">6. 官媒介入了，董小姐的父母自求多福吧</div>
+                <div class="comment-item">7. 普通医学生本硕博十一年，不如人家四年镀金</div>
+                <div class="comment-item">8. 这就是医疗界的翟天临事件，必须严查到底</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 案例3：大连工业大学女学生与外国男子不正当交往被学校开除 -->
+    <div class="case-card">
+        <div class="case-left">
+            <img class="case-img" src="大工不正当.jpg">
+            <div class="case-title">大连工业大学女学生与外国男子不正当交往被学校开除</div>
+            <button class="go-link" onclick="window.open('https://ef.zhiweidata.com/event/2079a05a137056b010091842/profileV2','_blank')">舆情详情</button>
+        </div>
+        <div class="case-right">
+            <div class="comment-box">
+                <div class="comment-item">1. 学校不是不想私下处理，是真的联系不上这个女生</div>
+                <div class="comment-item">2. 联系不上就纯扯淡，现在手机微信怎么可能联系不上</div>
+                <div class="comment-item">3. 是她躲避签收，没办法只能公告送达</div>
+                <div class="comment-item">4. 人家发在校内网上，是媒体给挂到热搜扩大影响</div>
+                <div class="comment-item">5. 换个说法，不是联系不上，而是有人拒绝联系</div>
+                <div class="comment-item">6. 女生长期旷课失联，学校按规定公告开除完全合法</div>
+                <div class="comment-item">7. 档案在学校，直系旁系亲属都能找到，就是故意躲着</div>
+                <div class="comment-item">8. 媒体吃人血馒头，把校内处分搞成全网网暴</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 案例4：6名大学生在内蒙古企业参观学习时意外溺亡 -->
+    <div class="case-card">
+        <div class="case-left">
+            <img class="case-img" src="夺命参观.jpg">
+            <div class="case-title">6名大学生在内蒙古企业参观学习时意外溺亡</div>
+            <button class="go-link" onclick="window.open('https://ef.zhiweidata.com/event/24304ab5c0974a4710092011/profileV2','_blank')">舆情详情</button>
+        </div>
+        <div class="case-right">
+            <div class="comment-box">
+                <div class="comment-item">1. 6名溺亡学生都是大三生，浮选槽里是矿浆，人掉进去根本动不了</div>
+                <div class="comment-item">2. 明确遇难原因是溺水合并异物阻塞呼吸道窒息，排除其他伤害</div>
+                <div class="comment-item">3. 孩子们太绝望了，完全不敢想象当时的场景</div>
+                <div class="comment-item">4. 格栅板违规施工没有支撑，这是低级的安全责任事故</div>
+                <div class="comment-item">5. 东北大学王牌专业学生，死于企业安全管理漏洞</div>
+                <div class="comment-item">6. 这热度降得好快，六条鲜活的生命不该被遗忘</div>
+                <div class="comment-item">7. 不敢想象父母此刻的模样，太惨烈太痛心了</div>
+                <div class="comment-item">8. 企业安全检查形同虚设，学校实践管理严重失职</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 案例5：重庆一大学生掉进化粪池遇难 -->
+    <div class="case-card">
+        <div class="case-left">
+            <img class="case-img" src="夺命化粪池.jpeg">
+            <div class="case-title">重庆一大学生掉进化粪池遇难</div>
+            <button class="go-link" onclick="window.open('https://ef.zhiweidata.com/event/6b99cc436991c1d810091211/profileV2','_blank')">舆情详情</button>
+        </div>
+        <div class="case-right">
+            <div class="comment-box">
+                <div class="comment-item">1. 化粪池遇难男生父母已赶到学校，希望给个公道</div>
+                <div class="comment-item">2. 极目锐评：男生掉进化粪池，通报为何模糊重点</div>
+                <div class="comment-item">3. 我们需要一个解释，化粪池为何没有安全防护</div>
+                <div class="comment-item">4. 学生要解释很正常，评论区别太离谱</div>
+                <div class="comment-item">5. 没看懂评论区里的一些人，出事了不该追责吗</div>
+                <div class="comment-item">6. 希望不需要解释的，自己也遇到这种情况</div>
+                <div class="comment-item">7. 评论区在干什么？学生要解释有问题吗</div>
+                <div class="comment-item">8. 校园设施安全隐患，必须全面排查整改</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 案例6：南京师范大学副院长婚内出轨女博士 -->
+    <div class="case-card">
+        <div class="case-left">
+            <img class="case-img" src="副院长出轨.jpg">
+            <div class="case-title">南京师范大学副院长婚内出轨女博士</div>
+            <button class="go-link" onclick="window.open('https://ef.zhiweidata.com/event/0acedee00541289410092009/profileV2','_blank')">舆情详情</button>
+        </div>
+        <div class="case-right">
+            <div class="comment-box">
+                <div class="comment-item">1. 这下全国都知道了，高校领导师德师风问题</div>
+                <div class="comment-item">2. 品质比学历重要，高学历不代表高素质</div>
+                <div class="comment-item">3. 挺难评的，私生活混乱影响太坏</div>
+                <div class="comment-item">4. 南师大尽培养这类学生，影响学校声誉</div>
+                <div class="comment-item">5. 估计只能出国发展了，国内待不下去</div>
+                <div class="comment-item">6. 作为大学副院长，做出这种事太失德</div>
+                <div class="comment-item">7. 权力寻租+私生活混乱，必须严肃处理</div>
+                <div class="comment-item">8. 高校领导监督管理缺位，应该零容忍</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 案例7：重庆大学通报本科生14篇SCI事件 -->
+    <div class="case-card">
+        <div class="case-left">
+            <img class="case-img" src="sci之王.png">
+            <div class="case-title">重庆大学通报本科生14篇SCI事件</div>
+            <button class="go-link" onclick="window.open('https://ef.zhiweidata.com/event/e436b8254a4a5e3910091077/profileV2','_blank')">舆情详情</button>
+        </div>
+        <div class="case-right">
+            <div class="comment-box">
+                <div class="comment-item">1. 基操而已，学术圈这种操作都见怪不怪了</div>
+                <div class="comment-item">2. 我就不信审国奖材料的老师当时没有发现问题</div>
+                <div class="comment-item">3. 这其实不是新闻，这么多年来算常规操作</div>
+                <div class="comment-item">4. 《我的教授父亲》，学术传承变成家族传承</div>
+                <div class="comment-item">5. 中国工程院应启动调查董袭莹事件涉及的院士</div>
+                <div class="comment-item">6. 应该重点打击学阀，净化学术环境</div>
+                <div class="comment-item">7. 董小姐的事曝光后，重大这种事很普遍</div>
+                <div class="comment-item">8. 本科生14篇SCI，含金量比4+4还水</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 案例8：华南理工大学校内车祸致1死1伤 -->
+    <div class="case-card">
+        <div class="case-left">
+            <img class="case-img" src="华南理工车祸.png">
+            <div class="case-title">华南理工大学校内车祸致1死1伤</div>
+            <button class="go-link" onclick="window.open('https://ef.zhiweidata.com/event/23ba5e92d871021310092890/profileV2','_blank')">舆情详情</button>
+        </div>
+        <div class="case-right">
+            <div class="comment-box">
+                <div class="comment-item">1. 校园里发生恶性车祸，交通安全管理严重缺位</div>
+                <div class="comment-item">2. 无辜学生伤亡令人痛心，一条生命就这样没了</div>
+                <div class="comment-item">3. 校内车辆管控形同虚设，必须升级安全措施</div>
+                <div class="comment-item">4. 警方介入调查，校方全力处置，希望查明真相</div>
+                <div class="comment-item">5. 举一反三，别再发生类似悲剧</div>
+                <div class="comment-item">6. 校园不是停车场，应该限制社会车辆进入</div>
+                <div class="comment-item">7. 太可惜了，年轻的生命戛然而止</div>
+                <div class="comment-item">8. 全面升级校园交通管控，保障学生安全</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 案例9：北理工教授被男学生举报性骚扰 -->
+    <div class="case-card">
+        <div class="case-left">
+            <img class="case-img" src="北理性骚扰.png">
+            <div class="case-title">北理工教授被男学生举报性骚扰</div>
+            <button class="go-link" onclick="window.open('https://ef.zhiweidata.com/event/e70ece08c1e0eeb110092007/profileV2','_blank')">舆情详情</button>
+        </div>
+        <div class="case-right">
+            <div class="comment-box">
+                <div class="comment-item">1. 北理工回应：宫某涉嫌师德失范行为基本属实，暂停一切职务</div>
+                <div class="comment-item">2. 打破性别偏见，性骚扰不分男女，必须零容忍</div>
+                <div class="comment-item">3. 男学生实名举报，勇气可嘉，希望保护受害者</div>
+                <div class="comment-item">4. 教授作为师表，做出这种事太令人失望</div>
+                <div class="comment-item">5. 校方处理及时，希望彻底调查给学生交代</div>
+                <div class="comment-item">6. 不管男生女生，遇到性骚扰都要勇敢站出来</div>
+                <div class="comment-item">7. 高校师德监督不能流于形式</div>
+                <div class="comment-item">8. 完善全覆盖反性骚扰保护机制，保护所有学生</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 案例10：男子68页PPT曝妻子出轨华南理工博士 -->
+    <div class="case-card">
+        <div class="case-left">
+            <img class="case-img" src="68页ppt.png">
+            <div class="case-title">男子68页PPT曝妻子出轨华南理工博士</div>
+            <button class="go-link" onclick="window.open('https://ef.zhiweidata.com/event/ee5de347d632829110092864/profileV2','_blank')">舆情详情</button>
+        </div>
+        <div class="case-right">
+            <div class="comment-box">
+                <div class="comment-item">1. 68页PPT曝光博士私生活乱象，太让人震惊</div>
+                <div class="comment-item">2. 高知群体道德形象崩塌，引发社会争议</div>
+                <div class="comment-item">3. 网络曝光与隐私边界引发激烈讨论</div>
+                <div class="comment-item">4. 都博士了还搞这种事，道德底线在哪里</div>
+                <div class="comment-item">5. 用68页PPT详细曝光，看来是真的伤透心了</div>
+                <div class="comment-item">6. 虽然出轨不对，但公开曝光的方式也值得商榷</div>
+                <div class="comment-item">7. 舆情聚焦高校学生品德教育问题</div>
+                <div class="comment-item">8. 引导理性看待私人问题，别过度网暴</div>
+            </div>
+        </div>
+    </div>
+
+       <!-- 案例11：北语一教授在清华大学被树砸中身亡 -->
+<div class="case-card">
+    <div class="case-left">
+        <img class="case-img" src="大树砸人.png">
+        <div class="case-title">北语一教授在清华大学被树砸中身亡</div>
+        <button class="go-link" onclick="window.open('https://ef.zhiweidata.com/event/95870a3cd467b8d210091622/profileV2','_blank')">舆情详情</button>
+    </div>
+    <div class="case-right">
+        <div class="comment-box">
+            <div class="comment-item">1. 真是令人十分心痛！有的单位总说第三方承包的，好像自己没有责任，实际上你是主体，也有不可推卸的责任！</div>
+            <div class="comment-item">2. 高空作业 不躲着点吗 很多学校的老师都没有生活常识…</div>
+            <div class="comment-item">3. 在清华眼中，她连有名字都不配，就是个家属</div>
+            <div class="comment-item">4. 这么优秀的人才意外离世，太可惜了，学校的安全管理确实需要加强</div>
+            <div class="comment-item">5. 树砸人这种事听起来不可思议，但确实暴露了校园安全隐患排查不到位</div>
+            <div class="comment-item">6. 希望学校能吸取教训，对校园内的树木和设施进行全面安全检查</div>
+            <div class="comment-item">7. 教授的家人肯定非常悲痛，希望学校能妥善处理后续事宜，给予家属足够的关怀</div>
+            <div class="comment-item">8. 校园安全无小事，任何细节都不能忽视，这次的教训太惨痛了</div>
+        </div>
+    </div>
+</div>
+
+<!-- 案例12：大连科技学院被曝停发工资 -->
+<div class="case-card">
+    <div class="case-left">
+        <img class="case-img" src="大连停工资.png">
+        <div class="case-title">大连科技学院被曝停发工资</div>
+        <button class="go-link" onclick="window.open('https://ef.zhiweidata.com/event/9dc9266c51c0c78e10092452/profileV2','_blank')">舆情详情</button>
+    </div>
+    <div class="case-right">
+        <div class="comment-box">
+            <div class="comment-item">1. 民办高校的未来都是停招和关闭。</div>
+            <div class="comment-item">2. 有个疑问 账号都被冻结了 怎么发补贴  学校有大量现金吗</div>
+            <div class="comment-item">3. 一年3亿+现金流这么优质资产  老板玩房地产？</div>
+            <div class="comment-item">4. 教职工辛辛苦苦工作，连工资都发不出来，这学校的管理肯定有问题</div>
+            <div class="comment-item">5. 希望相关部门能介入调查，保障教职工的合法权益</div>
+            <div class="comment-item">6. 停发工资会严重影响教职工的生活，也会打击教学积极性</div>
+            <div class="comment-item">7. 民办高校的资金管理应该更加规范，不能让教职工承担风险</div>
+            <div class="comment-item">8. 这种情况会影响学校的声誉，以后谁还愿意来这里工作和上学</div>
+        </div>
+    </div>
+</div>
+
+<!-- 案例13：甘肃农业职业技术学院女生宿舍分娩 -->
+<div class="case-card">
+    <div class="case-left">
+        <img class="case-img" src="甘农分娩.png">
+        <div class="case-title">甘肃农业职业技术学院女生宿舍分娩</div>
+        <button class="go-link" onclick="window.open('https://ef.zhiweidata.com/event/10eba086b3b50b6910092752/profileV2','_blank')">舆情详情</button>
+    </div>
+    <div class="case-right">
+        <div class="comment-box">
+            <div class="comment-item">1. 冷静想想，这事儿从头到尾都透着不对劲。一、大二学生，却要一个人在宿舍面对生孩子这种能要命的事。</div>
+            <div class="comment-item">2. 大二女生宿舍分娩，到底谁的错？</div>
+            <div class="comment-item">3. 学校的性教育和心理健康教育太缺失了，这么大的事居然没人发现</div>
+            <div class="comment-item">4. 女生太可怜了，在宿舍生孩子肯定很害怕，学校的管理存在很大问题</div>
+            <div class="comment-item">5. 应该加强对学生的关爱和管理，及时发现和解决学生的困难</div>
+            <div class="comment-item">6. 这件事反映出学校在学生管理方面的漏洞，需要好好反思和改进</div>
+            <div class="comment-item">7. 希望社会能多关注青少年的性教育和心理健康问题，避免类似事件再次发生</div>
+            <div class="comment-item">8. 学校应该建立更完善的学生帮扶机制，让学生遇到困难时能及时得到帮助</div>
+        </div>
+    </div>
+</div>
+
+<!-- 案例14：上海交大通报学生疑被校外人员殴打 -->
+<div class="case-card">
+    <div class="case-left">
+        <img class="case-img" src="上交挨揍.jpg">
+        <div class="case-title">上海交大通报学生疑被校外人员殴打</div>
+        <button class="go-link" onclick="window.open('https://ef.zhiweidata.com/event/c885b00b94428ca110091744/profileV2','_blank')">舆情详情</button>
+    </div>
+    <div class="case-right">
+        <div class="comment-box">
+            <div class="comment-item">1. 说实话，看完自述，这学生真不值得同情。</div>
+            <div class="comment-item">2. 校外什么东西不东西的都能进来，那学生的安全和合法权益如何保证？</div>
+            <div class="comment-item">3. 严惩打人者！足球打到人还有理了？法不能向不法让步！</div>
+            <div class="comment-item">4. 校园门禁管理太松散了，校外人员随便就能进来，学生安全怎么保障</div>
+            <div class="comment-item">5. 希望学校能加强安保措施，防止类似的暴力事件再次发生</div>
+            <div class="comment-item">6. 不管事情的起因是什么，打人都是不对的，应该依法处理</div>
+            <div class="comment-item">7. 学校应该尽快调查清楚事情的真相，给学生和家长一个交代</div>
+            <div class="comment-item">8. 校园安全需要学校和学生共同维护，希望能建立更完善的安全保障机制</div>
+        </div>
+    </div>
+</div>
+
+<!-- 案例15：安徽师范大学通报“因猥亵被处分男教师再任职” -->
+<div class="case-card">
+    <div class="case-left">
+        <img class="case-img" src="安徽猥亵犯.jpg">
+        <div class="case-title">安徽师范大学通报“因猥亵被处分男教师再任职”</div>
+        <button class="go-link" onclick="window.open('https://ef.zhiweidata.com/event/d175175848ca942d10091421/profileV2','_blank')">舆情详情</button>
+    </div>
+    <div class="case-right">
+        <div class="comment-box">
+            <div class="comment-item">1. 猥亵被处分，然后进了保卫处、保卫处、保卫处…这也太魔幻了</div>
+            <div class="comment-item">2. 文笔比他好，没工作的人多了，为啥单独给他留口饭，他有什么特别之处？</div>
+            <div class="comment-item">3. 没有公安的处置结果？</div>
+            <div class="comment-item">4. 有猥亵前科的教师居然还能在学校任职，这是对学生安全的不负责</div>
+            <div class="comment-item">5. 师德师风建设太重要了，这样的人根本不配当老师，更别说在保卫处工作</div>
+            <div class="comment-item">6. 希望学校能重视这个问题，彻底清除害群之马，保障学生的安全</div>
+            <div class="comment-item">7. 这种处理方式难以服众，应该给公众一个合理的解释</div>
+            <div class="comment-item">8. 师德一票否决制应该真正落实，不能只是说说而已</div>
+        </div>
+    </div>
+</div>
+
+<!-- 案例16：高校通报75万采购市价299元产品 -->
+<div class="case-card">
+    <div class="case-left">
+        <img class="case-img" src="高价路由器.png">
+        <div class="case-title">高校通报75万采购市价299元产品</div>
+        <button class="go-link" onclick="window.open('https://ef.zhiweidata.com/event/a703e804795aa1cb10091090/profileV2','_blank')">舆情详情</button>
+    </div>
+    <div class="case-right">
+        <div class="comment-box">
+            <div class="comment-item">1. 牛比，居然是真的</div>
+            <div class="comment-item">2. 完了，搞钱被发现了</div>
+            <div class="comment-item">3. 这公告有点此地无银三百两的味道</div>
+            <div class="comment-item">4. 75万买市价299元的产品，这中间的差价也太大了，肯定有问题</div>
+            <div class="comment-item">5. 高校采购监管太不到位了，这么明显的问题居然能通过审批</div>
+            <div class="comment-item">6. 希望纪检部门能深入调查，严肃处理相关责任人</div>
+            <div class="comment-item">7. 这是对国家资金的严重浪费，必须追究到底</div>
+            <div class="comment-item">8. 应该建立更严格的高校采购制度，防止类似的腐败问题发生</div>
+        </div>
+    </div>
+</div>
+
+<!-- 案例17：武汉大学白色座椅靠背贴红色圆形标签 -->
+<div class="case-card">
+    <div class="case-left">
+        <img class="case-img" src="武大日本椅.png">
+        <div class="case-title">武汉大学白色座椅靠背贴红色圆形标签</div>
+        <button class="go-link" onclick="window.open('https://ef.zhiweidata.com/event/72b9416ec158bc6410092601/profileV2','_blank')">舆情详情</button>
+    </div>
+    <div class="case-right">
+        <div class="comment-box">
+            <div class="comment-item">1. 在白色座椅上贴这红色标签，真的很容易误读。那为什么不提前避免被误读？</div>
+            <div class="comment-item">2. 武汉大学椅子标签争议事件通报来了，是误读误会。但是白椅子配这么大的红点，能不让误会吗？</div>
+            <div class="comment-item">3. 堂堂高校连这种敏感度都没有，用别的颜色，或者别的图案都行啊，偏偏用这种红色圆形标签</div>
+            <div class="comment-item">4. 这么明显的视觉误读，工作人员居然没有提前考虑到，说明工作太不细致了</div>
+            <div class="comment-item">5. 学校应该吸取教训，在以后的工作中多考虑细节，避免类似的争议</div>
+            <div class="comment-item">6. 其实有很多种标识方式，偏偏选择了最容易引起误会的一种，让人难以理解</div>
+            <div class="comment-item">7. 希望学校能重视公众的意见，及时改进工作中的不足</div>
+            <div class="comment-item">8. 这种低级错误不应该发生在知名高校，反映出工作作风不够严谨</div>
+        </div>
+    </div>
+</div>
+
+<!-- 案例18：重庆理工大学多名男留学生混住女生宿舍楼 -->
+<div class="case-card">
+    <div class="case-left">
+        <img class="case-img" src="重庆混住.png">
+        <div class="case-title">重庆理工大学多名男留学生混住女生宿舍楼</div>
+        <button class="go-link" onclick="window.open('https://ef.zhiweidata.com/event/c7a8737654d0bd6310092725/profileV2','_blank')">舆情详情</button>
+    </div>
+    <div class="case-right">
+        <div class="comment-box">
+            <div class="comment-item">1. 不是应该临时住在校长办公室吗？</div>
+            <div class="comment-item">2. 感谢替那些刚入学的大一女学生发声，好像是第一家关注此事的正规媒体</div>
+            <div class="comment-item">3. 男生的宿舍楼不能住是吧</div>
+            <div class="comment-item">4. 男女混住女生宿舍楼，严重侵犯了女生的隐私和安全，学校怎么能这么安排</div>
+            <div class="comment-item">5. 留学生也应该遵守学校的规定，不能搞特殊化，更不能影响其他学生的生活</div>
+            <div class="comment-item">6. 希望学校能尊重女生的感受，尽快调整住宿安排，保障女生的安全和隐私</div>
+            <div class="comment-item">7. 这种安排太不合理了，肯定会引起女生的不安和不满</div>
+            <div class="comment-item">8. 学校应该平等对待所有学生，不能因为是留学生就破坏正常的住宿管理规定</div>
+        </div>
+    </div>
+</div>
+
+<!-- 案例19：上海交大回应博士生举报学术霸凌 -->
+<div class="case-card">
+    <div class="case-left">
+        <img class="case-img" src="上交学术霸凌.png">
+        <div class="case-title">上海交大回应博士生举报学术霸凌</div>
+        <button class="go-link" onclick="window.open('https://ef.zhiweidata.com/event/358027829a7b2a8210091059/profileV2','_blank')">舆情详情</button>
+    </div>
+    <div class="case-right">
+        <div class="comment-box">
+            <div class="comment-item">1. 学校应该尽快调查清楚并公布结果，对公众有一个合理的交代，学术霸凌不能成为高校学子的求学潜规则</div>
+            <div class="comment-item">2. 这种现象确实很多，很多博士读出来就已经伤透了心，还谈啥创新</div>
+            <div class="comment-item">3. 整顿学阀刻不容缓</div>
+            <div class="comment-item">4. 学术霸凌严重影响学生的身心健康和学术发展，必须坚决制止</div>
+            <div class="comment-item">5. 希望学校能真正保护学生的权益，严肃处理学术霸凌行为</div>
+            <div class="comment-item">6. 博士生面临的压力已经很大了，再遭遇学术霸凌更是雪上加霜</div>
+            <div class="comment-item">7. 应该建立完善的学术霸凌举报和处理机制，让学生有地方申诉</div>
+            <div class="comment-item">8. 学术圈需要更健康的氛围，不能让学阀垄断资源，欺压学生</div>
+        </div>
+    </div>
+</div>
+
+                    <!-- 案例20：浙江大学一青年博导被曝坠楼身亡 -->
+                    <div class="case-card">
+                        <div class="case-left">
+                            <img class="case-img" src="浙大博导坠亡.png">
+                            <div class="case-title">浙江大学一青年博导被曝坠楼身亡</div>
+                            <button class="go-link" onclick="window.open('https://ef.zhiweidata.com/event/02cddb29e9c3964610092190/profileV2','_blank')">舆情详情</button>
+                        </div>
+                        <div class="case-right">
+                            <div class="comment-box">
+                                <div class="comment-item">1. 在传言甚嚣尘上之时，越需要权威信息来满足公众知情权</div>
+                                <div class="comment-item">2. 还以为你已经知道事情真相了呢</div>
+                                <div class="comment-item">3. 还能是什么原因，青椒非升即走考核压力大</div>
+                                <div class="comment-item">4. 青年博导坠楼身亡太可惜了，这么年轻就离开了，肯定承受了很大的压力</div>
+                                <div class="comment-item">5. 高校教师的考核压力太大了，尤其是青年教师，需要更多的关怀和支持</div>
+                                <div class="comment-item">6. 希望学校能关注教师的心理健康，建立心理疏导机制</div>
+                                <div class="comment-item">7. 学术圈的竞争太激烈了，希望能给青年教师更多的发展空间和人文关怀</div>
+                                <div class="comment-item">8. 愿逝者安息，也希望相关部门能调查清楚原因，给家属一个交代</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- ====================== 案例库替换结束，下方代码完全原样保留 ====================== -->
+
+<!-- —————————————— 修复后图表页面（100%显示） —————————————— -->
+<div class="section" id="chart">
+    <h1 class="page-title">高校负面舆情综合分析</h1>
+    <h2 class="section-title">一、舆情事件概况统计</h2>
+    <div class="chart-container">
+        <div class="chart-row-full">
+            <div class="chart-card">
+                <h3>舆情事件类型分布</h3>
+                <div id="chart1" class="chart"></div>
+            </div>
+            <div class="desc-card">
+                <p>从分布结构来看，人员道德与行为失范类事件占比最高，反映出高校内部师德师风问题已成为当前舆情高发地带，安全与意外管理类与内部治理与行政效能类各占四分之一左右，表明校园安全与管理运行也是公众关注的，学术伦理与公平争议类占比相对较低，但一旦爆发，往往因其涉及教育公平与学术公信力，会引发大规模持续性的热议。</p>
+            </div>
+        </div>
+        <div class="chart-row-half">
+            <div class="chart-card">
+                <h3>高校层次分布</h3>
+                <div id="chart2" class="chart"></div>
+            </div>
+            <div class="chart-card">
+                <h3>高校危机历史分布</h3>
+                <div id="chart3" class="chart"></div>
+            </div>
+        </div>
+    </div>
+    <h2 class="section-title">二、高校负面舆情回应数据</h2>
+    <div class="container">
+        <div class="card col-12 h-420">
+            <h3>校方回应次数分布</h3>
+            <div class="row-layout">
+                <div class="desc">
+                    从回应与否来看，有公开回应的案例为32起，占比71.1%；无任何公开回应的案例为13起，占比28.9%。这表明仍有近三成的高校在负面舆情爆发后选择沉默，回避公众关切。<br><br>
+                    从回应次数来看，在有过回应的32起案例中，超过一半的学校满足了基本的要求，即回应至少一次且有后续处理结果。绝大多数高校仅发布一次通报，共24起，占回应案例的四分之三；仅有8起案例进行了二次回应。多次回应的案例主要集中在人员道德失范类和学术伦理类事件，如“人大文学院在读博士举报导师性骚扰”、“南华大学回应网传男生造女生黄谣”“苏州大学回应学生恶意P图”等。相反，安全与意外管理类事件往往一次通报后便再无下文，后续调查进展多由警方或第三方发布。
+                </div>
+                <div id="chart4" class="chart"></div>
+            </div>
+        </div>
+        <div class="card col-6 h-480">
+            <h3>回应间隔时间分布</h3>
+            <div class="desc" style="margin-bottom:20px;">
+                从首次回应的间隔时间来看，32起有回应案例中，当天回应的有6起，占18.75%；事发后1天内回应的有18起，占56.25%；两者合计超过七成，表明当前多数高校能够在舆情爆发后的黄金24小时内作出反应，具备较强的时效意识。然而，仍有2天至7天回应的案例8起，7天以上回应的案例3起。回应迟缓的案例往往导致舆论持续升温，如“大连科技学院被曝停发工资”时隔19天才发布声明，“湘潭大学回应网传学生偷外卖被毒死”相隔13天，期间谣言四起，校方后续澄清虽部分挽回局面，但已错失最佳干预时机。
+
+            </div>
+            <div id="chart6" class="chart"></div>
+        </div>
+        <div class="card col-6 h-480">
+            <h3>回应媒体渠道分布</h3>
+            <div class="desc" style="margin-bottom:20px;">
+                在回应渠道的选择上，微博和微信公众号已成为高校发声的首选平台，共有18起案例通过上述渠道发布信息，占回应案例的56.25%。社交媒体的即时性、互动性和广泛覆盖能力使其成为危机沟通的利器。其次为学校门户网站，共10起（31.25%）。还有3起案例（9.36%）通过第三方渠道间接回应，这种情况在安全事故类事件中尤为常见，高校往往将调查主导权让渡给司法或行政部门，自身仅作配合性表态。
+            </div>
+            <div id="chart5" class="chart"></div>
+        </div>
+        <div class="card col-12 h-520">
+            <h3>回应策略与责任承担综合分析</h3>
+            <div class="desc" style="margin-bottom:20px;">
+                进一步深入文本，对不同类型舆情的回应方式进行统计，发现在安全与意外管理类中，高校倾向于沉默或第三方回应，行动回应率仅为50%，话语回应则多集中程序性表述，缺乏情感表达。对于人员道德与行为失范类，行动回应率高达85.7%，且多采用“重塑策略”如道歉、补偿、制度整改等，回应速度也普遍较快。对于学术伦理与公平争议类，虽数量少，但回应质量较高，话语回应多采用“详细通报+专家调查”，行动回应多涉及制度性纠偏。对于内部治理与行政效能类，回应文本多行政套话为主，行动回应多停留在调查中，后续制度整改公开不足。
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; flex: 1;">
+                <div id="chart8" class="chart"></div>
+                <div id="chart9" class="chart"></div>
+                <div id="chart7" class="chart"></div>
+            </div>
+        </div>
+        <div class="card col-12 h-480">
+            <h3>高校与公众归因偏差分布</h3>
+            <div class="desc" style="margin-bottom:20px;">
+                样本在64%的案例中大于等于0，归因偏差均值为0.16，表明公众对校方责任承担的实际感知普遍低于其初始预期。标准差为2.033，离散度适中，表示不同事件的表现有差异，但主要集中在均值附近。图中最高的柱子位于 0 到 2 之间，说明公众略感失望是常态，而极度满意的案例（负值区域）相对较少。这证实了在高校舆情中，校方的回应往往处于被动追赶状态，难以完全平复公众的心理期待。
+            </div>
+            <div id="chart10" class="chart"></div>
+        </div>
+        <div class="card col-12 h-520">
+            <h3>回应后公众情感倾向分布</h3>
+            <div class="desc" style="margin-bottom:20px;">
+               从回应之后的效果表明，当前高校舆情回应的整体效果并不理想，多数案例未能比较彻底地扭转舆论风向。进一步观察发现，所有正面情感案例均采用了重塑策略。而负面情感案例则广泛分布于无回应、淡化、否认等多种策略中，说明策略选择与效果之间存在紧密关联。细化到不同类型舆情事件的回应效果上，安全与意外管理类事件回应后（或根本无回应）公众情感正面仅8.3%，负面占66.7%。这类事件中高校往往因程序合规优先选择程序化回应或直接不回应。内部治理与行政效能类事件回应后（或根本无回应）公众情感正面占16.7%，负面占58.3%。此类事件暴露高校管理漏洞，公众的质疑在短期内很难消除。人员道德与行为失范类事件回应后（或根本无回应）公众情感正面占42.9%，负面占21.4%，回应效果较好，学术伦理与公平争议类事件回应后（或根本无回应），公众情感正面占57.1%，负面占14.3%，回应效果是四类事件中最好的。
+            </div>
+            <div class="double-chart">
+                <div id="chart11_pie" class="chart chart-pie"></div>
+                <div id="chart11_bar" class="chart chart-bar"></div>
+            </div>
+        </div>
+    </div>
+</div>
+    <!-- 3. 组态路径 -->
+    <div class="section" id="config">
+        <div class="intro-modal" id="introModal">
+            <div class="intro-box">
+                <h3>📋 组态路径玩法说明</h3>
+                <p>1. 右上角可展开/关闭正确组态路径参考</p>
+                <p>2. 第一排为条件变量，第二排为非条件变量（~）</p>
+                <p>3. 点击按钮选中/取消，完成后点击确认</p>
+                <p>4. 匹配成功弹出完整解读，失败则重选</p>
+                <button class="close-intro" onclick="closeIntro()">我知道了</button>
+            </div>
+        </div>
+        <div class="correct-path-panel" id="pathPanel">
+            <div class="panel-header" onclick="togglePanel()">
+                <span>✅ 正确组态路径</span>
+                <span id="toggleIcon">▼</span>
+            </div>
+            <div class="panel-body" id="panelBody">
+                <ul>
+                    <li>1. 行动回应策略 * 高校层次 * 归因偏差</li>
+                    <li>2. 行动回应策略 * ~舆情事件类型 * 话语回应策略 * 归因偏差</li>
+                    <li>3. ~行动回应策略 * ~危机历史 * ~高校层次 * ~话语回应策略 * 归因偏差</li>
+                    <li>4. ~危机历史 * ~高校层次 * ~舆情事件类型 * ~话语回应策略 * 归因偏差</li>
+                </ul>
+            </div>
+        </div>
+        <h1 class="page-title">高校舆情危机组态路径</h1>
+        <div class="config-container">
+            <div class="button-card">
+                <div class="button-row">
+                    <button class="condition-btn" data-value="舆情事件类型">舆情事件类型</button>
+                    <button class="condition-btn" data-value="危机历史">危机历史</button>
+                    <button class="condition-btn" data-value="高校层次">高校层次</button>
+                    <button class="condition-btn" data-value="话语回应策略">话语回应策略</button>
+                    <button class="condition-btn" data-value="行动回应策略">行动回应策略</button>
+                    <button class="condition-btn" data-value="归因偏差">归因偏差</button>
+                </div>
+                <div class="button-row">
+                    <button class="condition-btn" data-value="~舆情事件类型">~舆情事件类型</button>
+                    <button class="condition-btn" data-value="~危机历史">~危机历史</button>
+                    <button class="condition-btn" data-value="~高校层次">~高校层次</button>
+                    <button class="condition-btn" data-value="~话语回应策略">~话语回应策略</button>
+                    <button class="condition-btn" data-value="~行动回应策略">~行动回应策略</button>
+                    <button class="condition-btn" data-value="~归因偏差">~归因偏差</button>
+                </div>
+            </div>
+            <button class="confirm-btn" onclick="checkConfig()">确认选择</button>
+        </div>
+        <div class="result-modal" id="resultModal">
+            <div class="result-box">
+                <h3 id="resultTitle">组态匹配结果</h3>
+                <div id="resultContent"></div>
+                <button class="close-result" onclick="closeResult()">关闭</button>
+            </div>
+        </div>
+    </div>
+    <!-- 4. 治理建议 -->
+    <div class="section" id="suggest">
+        <h1 class="page-title">高校舆情治理建议</h1>
+        <div class="suggest-container">
+            <div class="suggest-card">
+                <h3 class="suggest-title">破除“单向输出”思维，找准事件焦点提高回应有效程度</h3>
+                <div class="suggest-content">
+                <p>高校在应对负面舆情时，应当建立常态化的舆情受众预期评估机制，在第一时间找到舆论的关注焦点。在事件发生初期，高校不应仅仅依据内部行政视角的事实调查来决定发声基调，而必须同步借助大数据人工智能等手段，精准把脉公众的情感倾向和责任追究焦点。</p>
+                <p>在建立评估机制方法上，一方面，必须提升使用专业舆情监测软件与大数据分析技术的能力，面对海量信息，唯有借助大模型大数据才能更全面的获知舆论场真实情况；另一方面，面对复杂多变的舆情情境，技术手段仍难以完全替代人的判断力与经验。因此，宜构建“人机协同”的工作机制，在技术层面，通过预设模型，实现舆情的自动化采集与初步筛查；在决策层面，则由高校相关人员进行深度研判与价值评估，以确保舆情应对更具针对性与人文温度。</p>
+                </div>
+            </div>
+            <div class="suggest-card">
+                <h3 class="suggest-title">消解行政冷漠，将人文温度嵌入日常管理与危机回应</h3>
+                <div class="suggest-content">
+                <p>高校在长期的行政化运作中，容易形成一种程序正确优先于情感共鸣的回应惯性，而这种人情味的缺失，恰恰是归因偏差被急剧放大的心理放大器。消解行政冷漠，是需要在危机中展现人情味。这具体可以分为三个方面。首先具体回应时机要体现“急人之所急”，尽量迅速地公布调查结果。它向公众表明校方对事件的重视程度与公众的关切程度是同频的。其次回应内容要表达情感。不能只发警情通报，更要表达对遇难者的哀悼和对家属的慰问。最后回应需要结合行动维度的补救。高校应针对不同情境提供实质补偿。</p>
+                <p>消解行政冷漠，还可以在日常管理中就展现人情味。这可以从以下三个方面着手：第一畅通校园内部反馈与沟通渠道。第二日常决策要嵌入师生视角。如果在政策出台前，能够多一些学生听证、多一些意见征集、多一些换位思考，这种本可以避免的舆情就不会发生。第三师生关系要回归育人本质。</p>
+                </div>
+            </div>
+            <div class="suggest-card">
+                <h3 class="suggest-title">分级治理，构建差异化、系统化的高校舆情治理路径</h3>
+                <div class="suggest-content">
+                <p>高校负面舆情事件的演化具有高度的系统性和复杂性。没有任何单一因素能够独立决定舆情回应的成败。因此，高校舆情治理必须走向“组态化”和“差异化”，管理者需要根据自身的高校层次、危机历史以及面临的舆情类型，灵活调用相匹配的策略组合。</p>
+                <p>高校回应需要建立模板标准，但绝非要求每次的处理都一成不变。高校应加强信息环境维度的协调能力，建立定期评估机制，根据每一场舆情事件的处理效果不断修订和完善回应标准。通过全局思维下的动态管理，将事后被动救火转变为事前风险预估、事中精准回应、事后制度优化的闭环体系。</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    // 基础交互
+    function enterMain() {
+        document.getElementById('cover-page').style.display = 'none';
+        document.getElementById('main-content').style.display = 'block';
+    }
+    function backToCover() {
+        document.getElementById('main-content').style.display = 'none';
+        document.getElementById('cover-page').style.display = 'flex';
+    }
+    function goSection(id) {
+        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        if(event) event.currentTarget.classList.add('active');
+        
+        const pathPanel = document.getElementById('pathPanel');
+        const introModal = document.getElementById('introModal');
+        const resultModal = document.getElementById('resultModal');
+        
+        if (id === 'config') {
+            pathPanel.classList.add('show');
+            if (!introModal.dataset.shown) {
+                introModal.classList.add('show');
+                introModal.dataset.shown = 'true';
+            }
+        } else {
+            pathPanel.classList.remove('show');
+            introModal.classList.remove('show');
+            resultModal.classList.remove('show');
+        }
+        // 切换到图表页时强制重绘（解决不显示）
+        if(id === 'chart'){
+            setTimeout(()=>{
+                window.dispatchEvent(new Event('resize'));
+            },200)
+        }
+    }
+    function goYear(year) {
+        document.getElementById('page2').style.display = 'none';
+        document.querySelectorAll('.year-page').forEach(p => p.style.display = 'none');
+        document.getElementById('year'+year).style.display = 'flex';
+    }
+    function backToPage2() {
+        document.querySelectorAll('.year-page').forEach(p => p.style.display = 'none');
+        document.getElementById('page2').style.display = 'flex';
+    }
+    // 组态功能
+    function closeIntro() { document.getElementById('introModal').classList.remove('show'); }
+    function togglePanel() {
+        const body = document.getElementById('panelBody');
+        const icon = document.getElementById('toggleIcon');
+        body.classList.toggle('show');
+        icon.textContent = body.classList.contains('show') ? '▲' : '▼';
+    }
+    document.querySelectorAll('.condition-btn').forEach(btn => {
+        btn.addEventListener('click', () => btn.classList.toggle('active'));
+    });
+
+// 四大组态完整解读
+        const correctConfigs = [
+            {
+                items: ['行动回应策略', '高校层次', '归因偏差'],
+                name: '路径一：名校主动型',
+                desc: `
+<p><strong>路径逻辑：</strong>当高校具备较高组织声誉，舆情后采取实质性行动回应，并承担公众预期内责任，即便不强调话语策略，也能实现良好回应效果。</p>
+<p><strong>理论内涵：</strong>体现“声誉资本”与“行动效能”共振效应。双一流高校自带高关注度与信任储备，正确认知问题+采取修复行动，是主动兑现名校责任期待、消耗声誉资本平息事态的关键。三者构成：名校光环—实质作为—责任承担的完整闭环。</p>
+<p><strong>典型案例：</strong></p>
+<p>1. 重庆大学通报本科生14篇SCI事件：重大作为双一流，迅速启动调查并公开结论，契合学术严谨期待，引导正向舆情。</p>
+<p>2. 华中农业大学学生举报导师学术造假：11名学生实名举报，舆情登顶热搜。学校当夜成立调查组、停止导师工作，逐一核查并严肃处理，展现不护短态度，与公众责任预期高度对齐。</p>
+`
+            },
+            {
+                items: ['行动回应策略', '~舆情事件类型', '话语回应策略', '归因偏差'],
+                name: '路径二：自我纠偏型',
+                desc: `
+<p><strong>路径逻辑：</strong>在非敏感舆情中，话语回应与行动回应高效协同，配合合理责任归因，可实现理想危机应对效果。</p>
+<p><strong>适用场景：</strong>不直接指向校方管理失职的事件（意外、师生失范等）。核心是行动解决实质问题，话语管理情绪与认知，满足公众知情权与监督需求。低归因偏差保证言行落在责任框架内，避免空头承诺或行动失语。</p>
+<p><strong>典型案例：</strong></p>
+<p>中国人民大学文学院博士举报导师性骚扰：事件属师德问题，校方非直接责任主体，但处理态度影响公信力。人大两次快速回应，给予党纪、岗位、教师资格、司法移送等全方位严肃处理，展现坚决履责姿态，成功化解危机。自我纠偏比回避更能修复信任。</p>
+`
+            },
+            {
+                items: ['~行动回应策略', '~危机历史', '~高校层次', '~话语回应策略', '归因偏差'],
+                name: '路径三：平稳过渡型',
+                desc: `
+<p><strong>路径逻辑：</strong>无危机历史、非双一流高校，弱行动+弱话语，仅履行基本责任即可实现舆情自然消退。</p>
+<p><strong>核心机制：</strong>非名校关注度低、无负面历史则不易陷入塔西佗陷阱，公众无预设敌意。只要守住法律与道德底线，舆情会因缺乏冲突点自然降温。属于低成本、避险型应对路径。</p>
+<p><strong>典型案例：</strong></p>
+<p>长江大学讲座播放不雅视频：校方次日发布简短通报，承诺依规处理但不披露细节，面对媒体追问以纪律为由缄默。作为省属高校，关注度有限、事件属意外，舆论以调侃为主。校方极简通报实现快速止损、平稳过渡。</p>
+`
+            },
+            {
+                items: ['~危机历史', '~高校层次', '~舆情事件类型', '~话语回应策略', '归因偏差'],
+                name: '路径四：底线止损型',
+                desc: `
+<p><strong>路径逻辑：</strong>无负面历史、非双一流、非敏感舆情，即便无强话语策略，只要尽到本分责任，即可达成危机止损。</p>
+<p><strong>理论内涵：</strong>舆情驱动力来自事件本身，而非校方责任。公众不苛求公关话术，更看重是否在制度框架内尽责。事实澄清+底线履责，即可切断舆情扩散动力。</p>
+<p><strong>典型案例：</strong></p>
+<p>湘潭大学学生宿舍投毒案：网传“偷外卖被投毒”引发热议。校方初期缄默配合警方，后续简短通报澄清谣言、公布案情，不做多余公关。事件属刑事意外，校方非责任主体。仅靠事实性回应便实现舆情快速降温，回应精准高效。</p>
+`
+            }
+        ];
+
+       function checkConfig() {
+        const selected = Array.from(document.querySelectorAll('.condition-btn.active')).map(b => b.dataset.value);
+        if (selected.length === 0) {
+            showResult('提示', '<p class="error-text">请至少选择一个条件变量！</p>');
+            return;
+        }
+        let match = null;
+        correctConfigs.forEach(c => {
+            const a = [...selected].sort().join('|');
+            const b = [...c.items].sort().join('|');
+            if (a === b) match = c;
+        });
+        if (match) showResult(match.name, match.desc);
+        else showResult('匹配失败', '<p class="error-text">不是正确的组态路径，请重新选择。</p>');
+    }
+    function showResult(title, content) {
+        document.getElementById('resultTitle').textContent = title;
+        document.getElementById('resultContent').innerHTML = content;
+        document.getElementById('resultModal').classList.add('show');
+    }
+    function closeResult() {
+        document.getElementById('resultModal').classList.remove('show');
+    }
+// —————————————— 修复图表JS：延迟初始化 + 强制resize ——————————————
+document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(()=>{
+        const colors = ['#9e8fb8', '#b89b7c', '#8aa8b8', '#a88c7c', '#88a3a8', '#9b88a8', '#7c98a8'];
+        const COLOR_POSITIVE = '#b89b7c';
+        const COLOR_NEUTRAL  = '#9e8fb8';
+        const COLOR_NEGATIVE = '#8aa8b8';
+        const chart1 = echarts.init(document.getElementById('chart1'));
+        const chart2 = echarts.init(document.getElementById('chart2'));
+        const chart3 = echarts.init(document.getElementById('chart3'));
+        const chart4 = echarts.init(document.getElementById('chart4'));
+        const chart5 = echarts.init(document.getElementById('chart5'));
+        const chart6 = echarts.init(document.getElementById('chart6'));
+        const chart7 = echarts.init(document.getElementById('chart7'));
+        const chart8 = echarts.init(document.getElementById('chart8'));
+        const chart9 = echarts.init(document.getElementById('chart9'));
+        const chart10 = echarts.init(document.getElementById('chart10'));
+        const chart11_pie = echarts.init(document.getElementById('chart11_pie'));
+        const chart11_bar = echarts.init(document.getElementById('chart11_bar'));
+        // 图表1
+        chart1.setOption({color:colors,tooltip:{trigger:'item'},series:[{type:'pie',radius:['40%','70%'],data:[{value:14,name:'人员道德与行为失范'},{value:12,name:'安全与意外管理风险'},{value:12,name:'内部治理与行政效能'},{value:7,name:'学术伦理与公平争议'}]}]});
+        // 图表2
+        chart2.setOption({color:colors,tooltip:{trigger:'item'},series:[{type:'pie',radius:['40%','70%'],data:[{value:24,name:'双一流高校'},{value:21,name:'非双一流高校'}]}]});
+        // 图表3
+        chart3.setOption({color:colors[0],xAxis:{type:'category',data:['无危机历史','有危机历史'],axisLine:{color:'#fff'},axisLabel:{color:'#fff'}},yAxis:{axisLine:{color:'#fff'},axisLabel:{color:'#fff'}},series:[{type:'bar',data:[34,11],itemStyle:{borderRadius:6}}]});
+        // 图表4
+        chart4.setOption({color:colors,tooltip:{trigger:'item'},series:[{type:'pie',radius:['30%','70%'],data:[{value:7,name:'回应1次无后续'},{value:18,name:'回应1次有后续'},{value:8,name:'回应2次有后续'},{value:5,name:'无回应无后续'},{value:7,name:'无回应有后续'}]}]});
+        // 图表5
+        chart5.setOption({color:colors,tooltip:{trigger:'item'},series:[{type:'pie',radius:['30%','70%'],data:[{value:10,name:'官网'},{value:14,name:'微博'},{value:4,name:'公众号'},{value:3,name:'多渠道'},{value:3,name:'第三方'},{value:11,name:'无回应'}]}]});
+        // 图表6
+        chart6.setOption({color:colors[0],xAxis:{type:'category',data:['当天','1天','2天','3天','5天','13天','19天','50天','无回应'],axisLine:{color:'#fff'},axisLabel:{color:'#fff'}},yAxis:{axisLine:{color:'#fff'},axisLabel:{color:'#fff'}},series:[{type:'bar',data:[6,18,3,4,1,1,1,1,10],itemStyle:{borderRadius:6}}]});
+        // 图表7
+        chart7.setOption({color:colors,tooltip:{trigger:'item'},series:[{type:'pie',radius:['30%','70%'],data:[{value:4,name:'完全承担'},{value:7,name:'较多承担'},{value:7,name:'中等承担'},{value:14,name:'较少承担'},{value:13,name:'未承担'}]}]});
+        // 图表8
+        chart8.setOption({color:colors,tooltip:{trigger:'item'},series:[{type:'pie',radius:['30%','70%'],data:[{value:8,name:'淡化'},{value:10,name:'否认'},{value:13,name:'无回应'},{value:14,name:'重塑'}]}]});
+        // 图表9
+        chart9.setOption({color:colors,tooltip:{trigger:'item'},series:[{type:'pie',radius:['30%','70%'],data:[{value:32,name:'公开处理'},{value:13,name:'未公开'}]}]});
+        // 图表10
+        chart10.setOption({color:colors[0],xAxis:{type:'category',data:['-4','-3','-2','-1','0','1','2','3','4'],axisLine:{color:'#fff'},axisLabel:{color:'#fff'}},yAxis:{axisLine:{color:'#fff'},axisLabel:{color:'#fff'}},series:[{type:'bar',data:[3,2,4,7,8,9,6,5,1],itemStyle:{borderRadius:6}}]});
+        // 图表11饼图
+        chart11_pie.setOption({tooltip:{trigger:'item'},series:[{type:'pie',radius:['30%','70%'],data:[{value:15,name:'负面',itemStyle:{color:COLOR_NEGATIVE}},{value:11,name:'正面',itemStyle:{color:COLOR_POSITIVE}},{value:19,name:'中性',itemStyle:{color:COLOR_NEUTRAL}}]}]});
+        // 图表11柱状图
+        chart11_bar.setOption({tooltip:{trigger:'axis'},xAxis:{type:'category',data:['安全类','治理类','道德类','学术类'],axisLine:{color:'#fff'},axisLabel:{color:'#fff'}},yAxis:{axisLine:{color:'#fff'},axisLabel:{color:'#fff'}},series:[
+            {name:'正面',type:'bar',stack:'total',data:[8.3,16.7,42.9,57.1],itemStyle:{color:COLOR_POSITIVE}},
+            {name:'中性',type:'bar',stack:'total',data:[25,25,35.7,28.6],itemStyle:{color:COLOR_NEUTRAL}},
+            {name:'负面',type:'bar',stack:'total',data:[66.7,58.3,21.4,14.3],itemStyle:{color:COLOR_NEGATIVE}}
+        ]});
+        // 全局自适应
+        window.addEventListener('resize', () => {
+            chart1.resize();chart2.resize();chart3.resize();chart4.resize();chart5.resize();chart6.resize();
+            chart7.resize();chart8.resize();chart9.resize();chart10.resize();chart11_pie.resize();chart11_bar.resize();
+        });
+    },300)
+});
+</script>
+</body>
+</html>
